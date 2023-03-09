@@ -5,6 +5,8 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import { create as ipfsHttpClient } from "ipfs-http-client";
 
+import { ThirdwebSDK } from "@thirdweb-dev/sdk";
+
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 const projectSecretKey = process.env.NEXT_PUBLIC_PROJECT_SECRET_KEY;
 const auth = `Basic ${Buffer.from(`${projectId}:${projectSecretKey}`).toString(
@@ -12,6 +14,9 @@ const auth = `Basic ${Buffer.from(`${projectId}:${projectSecretKey}`).toString(
 )}`;
 const URL = process.env.NEXT_PUBLIC_URL;
 const subdomain = process.env.NEXT_PUBLIC_SUBDOMAIN;
+const RPCUri = process.env.NEXT_PUBLIC_PROJECT_PROVIDER;
+const marketPlaceContractAddress =
+	process.env.NEXT_PUBLIC_PROJECT_MARKETPLACE_CONTRACT_ADRESS;
 
 const client = ipfsHttpClient({
 	host: "infura-ipfs.io",
@@ -22,55 +27,31 @@ const client = ipfsHttpClient({
 	},
 });
 
-//INTERNAL  IMPORT
-import {
-	NFTMarketplaceAddress,
-	NFTMarketplaceABI,
-	transferFundsAddress,
-	transferFundsABI,
-} from "./constants";
 
 //---FETCHING SMART CONTRACT
-const fetchContract = (signerOrProvider) =>
-	new ethers.Contract(
-		NFTMarketplaceAddress,
-		NFTMarketplaceABI,
-		signerOrProvider
-	);
+const fetchContract = async (signerOrProvider, typeOfContract) => {
+	if (typeOfContract === "marketplace") {
+		const sdk = ThirdwebSDK.fromSigner(signerOrProvider, RPCUri);
+		return await sdk.getContract(marketPlaceContractAddress, "marketplace");
+	} else {
+		const sdk = ThirdwebSDK.fromSigner(signerOrProvider, RPCUri);
+		return await sdk.getContract(typeOfContract, "nft-collection");
+	}
+	
+};
 
 //---CONNECTING WITH SMART CONTRACT
 
-const connectingWithSmartContract = async () => {
+const connectingWithSmartContract = async (typeOfContract) => {
 	try {
 		const web3Modal = new Web3Modal();
 		const connection = await web3Modal.connect();
 		const provider = new ethers.providers.Web3Provider(connection);
 		const signer = provider.getSigner();
-		const contract = fetchContract(signer);
+		const contract = await fetchContract(signer, typeOfContract);
 		return contract;
 	} catch (error) {
 		console.log("Something went wrong while connecting with contract", error);
-	}
-};
-
-//----TRANSFER FUNDS
-
-const fetchTransferFundsContract = (signerOrProvider) =>
-	new ethers.Contract(transferFundsAddress, transferFundsABI, signerOrProvider);
-
-const connectToTransferFunds = async () => {
-	try {
-		// const web3Modal = new Wenb3Modal();
-		// const connection = await web3Modal.connect();
-		// const provider = new ethers.providers.Web3Provider(connection);
-		const provider = new ethers.providers.JsonRpcProvider(
-			"https://goerli.infura.io/v3/22e93319c7504d95a136f7c2c31714b4"
-		);
-		const signer = provider.getSigner();
-		const contract = fetchTransferFundsContract(signer);
-		return contract;
-	} catch (error) {
-		console.log(error);
 	}
 };
 
@@ -93,8 +74,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 	//---CHECK IF WALLET IS CONNECTD
 	const checkIfWalletConnected = async () => {
 		try {
-			if (!window.ethereum)
-				return setError("Install MetaMask");
+			if (!window.ethereum) return setError("Install MetaMask");
 
 			const accounts = await window.ethereum.request({
 				method: "eth_accounts",
@@ -107,7 +87,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 				const bal = ethers.utils.formatEther(getBalance);
 				setAccountBalance(bal);
 				// console.log(accounts[0]);
-				connectingWithSmartContract();
+				await connectingWithSmartContract("marketplace");
 			} else {
 				setError("No Account Found");
 				// setOpenError(true);
@@ -124,14 +104,14 @@ export const NFTMarketplaceProvider = ({ children }) => {
 	}, []);
 
 	useEffect(() => {
+		if (!currentAccount) return;
 		getUser();
 	}, [currentAccount]);
 
 	//---CONNET WALLET FUNCTION
 	const connectWallet = async () => {
 		try {
-			if (!window.ethereum)
-				return setError("Install MetaMask");
+			if (!window.ethereum) return setError("Install MetaMask");
 
 			const accounts = await window.ethereum.request({
 				method: "eth_requestAccounts",
@@ -140,7 +120,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 			// window.location.reload();
 		} catch (error) {
 			setError("Error while connecting to wallet");
-			setOpenError(true);
+			// setOpenError(true);
 		}
 	};
 
@@ -148,12 +128,12 @@ export const NFTMarketplaceProvider = ({ children }) => {
 	const uploadToIPFS = async (file) => {
 		try {
 			const added = await client.add({ content: file });
-			
+
 			const url = `${subdomain}/ipfs/${added.path}`;
 			return url;
 		} catch (error) {
 			setError("Error Uploading to IPFS");
-			setOpenError(true);
+			// setOpenError(true);
 		}
 	};
 
@@ -176,7 +156,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 		} catch (error) {
 			setError("Error while minting NFT");
 
-			setOpenError(true);
+			// setOpenError(true);
 		}
 	};
 
@@ -202,7 +182,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 			console.log(transaction);
 		} catch (error) {
 			setError("error while creating sale");
-			setOpenError(true);
+			// setOpenError(true);
 			console.log(error);
 		}
 	};
@@ -212,30 +192,42 @@ export const NFTMarketplaceProvider = ({ children }) => {
 	const fetchNFTs = async () => {
 		try {
 			if (currentAccount) {
-				const provider = new ethers.providers.JsonRpcProvider(
-					"https://eth-goerli.g.alchemy.com/v2/sgVKVudg1rIPwUU065uEUAgFMaOXnYmc"
+				const contract = await connectingWithSmartContract(
+					"0xb20B88B9B57E000D45ac9B0F03Ddf159334cFD89"
 				);
-				const contract = fetchContract(provider);
-
-				const data = await contract.fetchMarketItems();
-
+				const data = await contract.erc721.getAll();
 				const items = await Promise.all(
 					data.map(
-						async ({ tokenId, seller, owner, price: unformattedPrice }) => {
-							const tokenURI = await contract.tokenURI(tokenId);
-							var tokenSplit = tokenURI.split("/").pop();
-							const tokenURISend = `https://ipfs.io/ipfs/${tokenSplit}`;
-							const {
-								data: { image, name, description },
-							} = await axios.get(tokenURISend);
-							const price = ethers.utils.formatUnits(
-								unformattedPrice.toString(),
-								"ether"
-							);
+						async ({metadata, nft_owner}) => {
+							const name = metadata.name;
+							const description = metadata.description;
+							const tokenId = metadata.id;
+							const image = metadata.image;
+							const tokenURI = metadata.uri;
+							const seller = nft_owner;
+							const owner = nft_owner;
+							const price = "1 BNB"
+							// const tokenURI = await contract.tokenURI(tokenId);
+
+							// --- THIS IS WORKING ---
+							// var tokenSplit = tokenURI.split("//").pop();
+							// const tokenURISend = `https://ipfs.io/ipfs/${tokenSplit}`;
+							// console.log(tokenURISend)
+							// const {
+							// 	data: { image, name, description },
+							// } = await axios.get(tokenURISend);
+							// console.log(image, name, description)
+
+							// --- ---- ---- --- -----
+
+							// const price = ethers.utils.formatUnits(
+							// 	unformattedPrice.toString(),
+							// 	"ether"
+							// );
 
 							return {
 								price,
-								tokenId: tokenId.toNumber(),
+								tokenId: tokenId,
 								seller,
 								owner,
 								image,
@@ -246,11 +238,12 @@ export const NFTMarketplaceProvider = ({ children }) => {
 						}
 					)
 				);
+				console.log(items);
 				return items;
 			}
 		} catch (error) {
 			setError("Error while fetching NFTS");
-			setOpenError(true);
+			// setOpenError(true);
 			console.log(error);
 		}
 	};
@@ -265,7 +258,9 @@ export const NFTMarketplaceProvider = ({ children }) => {
 	const fetchMyNFTsOrListedNFTs = async (type) => {
 		try {
 			if (currentAccount) {
-				const contract = await connectingWithSmartContract();
+				const contract = await connectingWithSmartContract(
+					"0xb20B88B9B57E000D45ac9B0F03Ddf159334cFD89"
+				);
 
 				const data =
 					type == "fetchItemsListed"
@@ -305,7 +300,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 			}
 		} catch (error) {
 			setError("Error while fetching listed NFTs");
-			setOpenError(true);
+			// setOpenError(true);
 		}
 	};
 
@@ -327,7 +322,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 			router.push("/author");
 		} catch (error) {
 			setError("Error While buying NFT");
-			setOpenError(true);
+			// setOpenError(true);
 		}
 	};
 
@@ -406,7 +401,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 	const createUser = async () => {
 		try {
 			await axios
-				.post(URL+"api/v1/users/createuser", {
+				.post(URL + "api/v1/users/createuser", {
 					username: currentAccount.slice(0, 7),
 					walletaddress: currentAccount,
 				})
@@ -420,7 +415,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 	const createNFTDB = async (name, price, description, image, owner) => {
 		try {
 			await axios
-				.post(URL+"api/v1/nfts/createnft", {
+				.post(URL + "api/v1/nfts/createnft", {
 					name: name,
 					price: price,
 					description: description,
@@ -441,7 +436,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 	const getUser = async () => {
 		try {
 			await axios
-				.get(URL+"api/v1/users/getuser/" + currentAccount, {})
+				.get(URL + "api/v1/users/getuser/" + currentAccount, {})
 				.then(function (response) {
 					if (response.data.status === "success") {
 						if (response.data.data.user.length == 0) {
@@ -459,30 +454,23 @@ export const NFTMarketplaceProvider = ({ children }) => {
 		}
 	};
 
-	const updateUser = async (username, email, website, bio,fileUri) => {
-		try {	
+	const updateUser = async (username, email, website, bio, fileUri) => {
+		try {
 			await axios
-				.patch(
-					URL+"api/v1/users/updateuser/" + currentAccount,
-					{
-						username: username,
-						email: email,
-						website: website,
-						bio: bio,
-            			photo:fileUri
-					}
-				)
+				.patch(URL + "api/v1/users/updateuser/" + currentAccount, {
+					username: username,
+					email: email,
+					website: website,
+					bio: bio,
+					photo: fileUri,
+				})
 				.then(function (response) {
 					if (response.data.status === "success") {
 						setUser(response.data.data.user);
 					}
-					
 				})
-				.catch(function (error) {
-					
-				});
+				.catch(function (error) {});
 			return user;
-			
 		} catch {
 			console.log("Error during creating user");
 		}

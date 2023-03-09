@@ -79,7 +79,7 @@ const AudioCard = () => {
           </div>
 
           <div className={Style.audioCard_box_details_stock}>
-            <LikeProfile />
+            <LikeProfile/>
             <small>24 in stock</small>
           </div>
         </div>

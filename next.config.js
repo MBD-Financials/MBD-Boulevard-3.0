@@ -7,20 +7,16 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ["fullstacknftmarketplace.infura-ipfs.io", "infura-ipfs.io"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ]
   }
 };
 
-// module.exports = withPlugins(
-//   [[withVideos()]],
-//   nextConfig
-// );
 
-// const { withSentryConfig } = require('@sentry/nextjs');
-
-// const moduleExports = {
-//  // next config
-// };
 
 const plugins = [withVideos];
 

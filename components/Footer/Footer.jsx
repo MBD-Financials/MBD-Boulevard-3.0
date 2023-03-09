@@ -54,12 +54,11 @@ const Footer = () => {
             <a href="https://www.instagram.com/mbdfinancials/">
               <TiSocialInstagram />
             </a>
-            <a href="#">
-              <SocialIcon network="discord" style={{ height: 20, width: 20 }} bgColor="#ffffff" fgColor="#000000"/>
-            </a>
-          <a href="#">
+            <SocialIcon network="discord" style={{ height: 20, width: 20 }} bgColor="#ffffff" fgColor="#000000"/>
+            
+          
             <SocialIcon network="telegram" style={{ height: 20, width: 20 }} bgColor="#ffffff" fgColor="#000000"/>
-          </a>
+          
           </div>
         </div>
 
