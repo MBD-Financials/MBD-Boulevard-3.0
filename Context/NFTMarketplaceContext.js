@@ -31,7 +31,7 @@ const client = ipfsHttpClient({
 const fetchContract = async (signerOrProvider, typeOfContract) => {
 	if (typeOfContract === "marketplace") {
 		const sdk = ThirdwebSDK.fromSigner(signerOrProvider, RPCUri);
-		return await sdk.getContract(marketPlaceContractAddress, "marketplace");
+		return await sdk.getContract("0x0a7D9B93eFe8fF75C9120b8B6d2FBF2D1a4A4BA2", "marketplace");
 	} else {
 		const sdk = ThirdwebSDK.fromSigner(signerOrProvider, RPCUri);
 		return await sdk.getContract(typeOfContract, "nft-collection");
