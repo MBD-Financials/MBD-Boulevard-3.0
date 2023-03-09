@@ -93,7 +93,7 @@ const NFTDetailsImg = ({ nft }) => {
 
 				{details && (
 					<div className={Style.NFTDetailsImg_box_details_box}>
-						<p>Contract Address: {nft.seller}</p>
+						<p>Contract Address: {nft.contractAddress}</p>
 						<p>
 							Token ID: {nft.tokenId}
 						</p>

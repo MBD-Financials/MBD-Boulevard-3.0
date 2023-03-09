@@ -17,6 +17,7 @@ const NFTDetails = () => {
     owner: "",
     price: "",
     seller: "",
+    contractaddress: "",
   });
 
   const router = useRouter();

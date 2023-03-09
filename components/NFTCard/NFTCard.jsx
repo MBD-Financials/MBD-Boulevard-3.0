@@ -9,17 +9,6 @@ import Style from "./NFTCard.module.css";
 import images from "../../img";
 
 const NFTCard = ({ NFTData }) => {
-  // const CardArray = [
-  //   images.nft_image_1,
-  //   images.nft_image_2,
-  //   images.nft_image_3,
-  //   images.nft_image_1,
-  //   images.nft_image_2,
-  //   images.nft_image_3,
-  //   images.nft_image_1,
-  //   images.nft_image_2,
-  //   images.nft_image_3,
-  // ];
 
   const [like, setLike] = useState(true);
 
@@ -87,8 +76,8 @@ const NFTCard = ({ NFTData }) => {
                     <div
                       className={Style.NFTCard_box_update_details_price_box_bid}
                     >
-                      <p className="text-xs font-medium">Current Bid</p>
-                      <p className="text-sm">{el.price} ETH</p>
+                      <p className="text-sm font-medium">Price</p>
+                      <p className="text-lg">{el.price}</p>
                     </div>
                     {/* <div>
                       <p className="text-xs">61 in stock</p>

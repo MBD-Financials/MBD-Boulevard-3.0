@@ -27,7 +27,6 @@ const client = ipfsHttpClient({
 	},
 });
 
-
 //---FETCHING SMART CONTRACT
 const fetchContract = async (signerOrProvider, typeOfContract) => {
 	if (typeOfContract === "marketplace") {
@@ -37,7 +36,6 @@ const fetchContract = async (signerOrProvider, typeOfContract) => {
 		const sdk = ThirdwebSDK.fromSigner(signerOrProvider, RPCUri);
 		return await sdk.getContract(typeOfContract, "nft-collection");
 	}
-	
 };
 
 //---CONNECTING WITH SMART CONTRACT
@@ -141,18 +139,26 @@ export const NFTMarketplaceProvider = ({ children }) => {
 	const createNFT = async (name, price, image, description, router) => {
 		if (!name || !description || !price || !image)
 			return setError("Data Is Missing"), setOpenError(true);
-
-		const data = JSON.stringify({ name, description, image });
-
+		
 		try {
-			const added = await client.add(data);
+			const contract = await connectingWithSmartContract(
+				"0xb20B88B9B57E000D45ac9B0F03Ddf159334cFD89"
+			);
+			
+			const data = JSON.stringify({ name, description, image });
+			const tx = await contract.erc721.mintTo(currentAccount, data);
+			const receipt = tx.receipt; // the transaction receipt
+			console.log(receipt);
+			const tokenId = tx.id; // the id of the NFT minted
+			console.log(tokenId);
+			const nft = await tx.data(); // (optional) fetch details of minted NFT
+			
+			console.log(nft)
 
-			const url = `https://infura-ipfs.io/ipfs/${added.path}`;
-
-			await createSale(url, price);
 			createNFTDB(name, parseFloat(price), description, image, currentAccount);
 			router.push("/searchPage");
 			console.log("NFT CREATED");
+
 		} catch (error) {
 			setError("Error while minting NFT");
 
@@ -197,48 +203,45 @@ export const NFTMarketplaceProvider = ({ children }) => {
 				);
 				const data = await contract.erc721.getAll();
 				const items = await Promise.all(
-					data.map(
-						async ({metadata, nft_owner}) => {
-							const name = metadata.name;
-							const description = metadata.description;
-							const tokenId = metadata.id;
-							const image = metadata.image;
-							const tokenURI = metadata.uri;
-							const seller = nft_owner;
-							const owner = nft_owner;
-							const price = "1 BNB"
-							// const tokenURI = await contract.tokenURI(tokenId);
+					data.map(async ({ metadata, nft_owner }) => {
+						const name = metadata.name;
+						const description = metadata.description;
+						const tokenId = metadata.id;
+						const image = metadata.image;
+						const tokenURI = metadata.uri;
+						const seller = nft_owner;
+						const owner = nft_owner;
+						const price = "1 BNB";
+						// const tokenURI = await contract.tokenURI(tokenId);
 
-							// --- THIS IS WORKING ---
-							// var tokenSplit = tokenURI.split("//").pop();
-							// const tokenURISend = `https://ipfs.io/ipfs/${tokenSplit}`;
-							// console.log(tokenURISend)
-							// const {
-							// 	data: { image, name, description },
-							// } = await axios.get(tokenURISend);
-							// console.log(image, name, description)
+						// --- THIS IS WORKING ---
+						// var tokenSplit = tokenURI.split("//").pop();
+						// const tokenURISend = `https://ipfs.io/ipfs/${tokenSplit}`;
+						// console.log(tokenURISend)
+						// const {
+						// 	data: { image, name, description },
+						// } = await axios.get(tokenURISend);
+						// console.log(image, name, description)
 
-							// --- ---- ---- --- -----
+						// --- ---- ---- --- -----
 
-							// const price = ethers.utils.formatUnits(
-							// 	unformattedPrice.toString(),
-							// 	"ether"
-							// );
+						// const price = ethers.utils.formatUnits(
+						// 	unformattedPrice.toString(),
+						// 	"ether"
+						// );
 
-							return {
-								price,
-								tokenId: tokenId,
-								seller,
-								owner,
-								image,
-								name,
-								description,
-								tokenURI,
-							};
-						}
-					)
+						return {
+							price,
+							tokenId: tokenId,
+							seller,
+							owner,
+							image,
+							name,
+							description,
+							tokenURI,
+						};
+					})
 				);
-				console.log(items);
 				return items;
 			}
 		} catch (error) {
@@ -248,9 +251,55 @@ export const NFTMarketplaceProvider = ({ children }) => {
 		}
 	};
 
+	const fetchNFTsMarketplace = async () => {
+		try {
+			if (currentAccount) {
+				const contract = await connectingWithSmartContract("marketplace");
+				const listings = await contract.getAllListings();
+				console.log(listings);
+				const items = await Promise.all(
+					listings.map(
+						async ({
+							asset,
+							assetContractAddress,
+							buyoutCurrencyValuePerToken,
+							sellerAddress,
+
+						}) => {
+							const name = asset.name;
+							const description = asset.description;
+							const tokenId = asset.id;
+							const image = asset.image;
+							const tokenURI = asset.uri;
+							const seller = sellerAddress;
+							const owner = sellerAddress;
+							const contractAddress = assetContractAddress;
+							const price = buyoutCurrencyValuePerToken['displayValue'].concat(" ",buyoutCurrencyValuePerToken['symbol']);
+							return {
+								price,
+								tokenId: tokenId,
+								seller,
+								owner,
+								image,
+								name,
+								description,
+								tokenURI,
+								contractAddress
+							};
+						}
+					)
+				);
+				console.log(items);
+				return items;
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	};
 	useEffect(() => {
 		if (currentAccount) {
 			fetchNFTsCollection();
+			fetchNFTsMarketplace();
 		}
 	}, []);
 
@@ -326,77 +375,6 @@ export const NFTMarketplaceProvider = ({ children }) => {
 		}
 	};
 
-	//------------------------------------------------------------------
-	//---TRANSFER FUNDS
-
-	const transferEther = async (address, ether, message) => {
-		try {
-			if (currentAccount) {
-				const contract = await connectToTransferFunds();
-				console.log(address, ether, message);
-
-				const unFormatedPrice = ethers.utils.parseEther(ether);
-				// //FIRST METHOD TO TRANSFER FUND
-				await ethereum.request({
-					method: "eth_sendTransaction",
-					params: [
-						{
-							from: currentAccount,
-							to: address,
-							gas: "0x5208",
-							value: unFormatedPrice._hex,
-						},
-					],
-				});
-
-				const transaction = await contract.addDataToBlockchain(
-					address,
-					unFormatedPrice,
-					message
-				);
-
-				console.log(transaction);
-
-				setLoading(true);
-				transaction.wait();
-				setLoading(false);
-
-				const transactionCount = await contract.getTransactionCount();
-				setTransactionCount(transactionCount.toNumber());
-				window.location.reload();
-			}
-		} catch (error) {
-			console.log(error);
-		}
-	};
-
-	//FETCH ALL TRANSACTION
-	const getAllTransactions = async () => {
-		try {
-			if (ethereum) {
-				const contract = await connectToTransferFunds();
-
-				const avaliableTransaction = await contract.getAllTransactions();
-
-				const readTransaction = avaliableTransaction.map((transaction) => ({
-					addressTo: transaction.receiver,
-					addressFrom: transaction.sender,
-					timestamp: new Date(
-						transaction.timestamp.toNumber() * 1000
-					).toLocaleString(),
-					message: transaction.message,
-					amount: parseInt(transaction.amount._hex) / 10 ** 18,
-				}));
-
-				setTransactions(readTransaction);
-				console.log(transactions);
-			} else {
-				console.log("On Ethereum");
-			}
-		} catch (error) {
-			console.log(error);
-		}
-	};
 
 	const createUser = async () => {
 		try {
@@ -492,14 +470,13 @@ export const NFTMarketplaceProvider = ({ children }) => {
 				setOpenError,
 				openError,
 				error,
-				transferEther,
-				getAllTransactions,
 				loading,
 				accountBalance,
 				transactionCount,
 				transactions,
 				user,
 				updateUser,
+				fetchNFTsMarketplace
 			}}
 		>
 			{children}

@@ -29,13 +29,13 @@ const Home = () => {
   const { checkIfWalletConnected, currentAccount } = useContext(
     NFTMarketplaceContext
   );
-  const { fetchNFTsCollection } = useContext(NFTMarketplaceContext);
+  const { fetchNFTsCollection, fetchNFTsMarketplace } = useContext(NFTMarketplaceContext);
   const [nfts, setNfts] = useState([]);
   const [nftsCopy, setNftsCopy] = useState([]);
 
   useEffect(() => {
     if (currentAccount) {
-      fetchNFTsCollection().then((items) => {
+      fetchNFTsMarketplace().then((items) => {
         setNfts(items.reverse());
         setNftsCopy(items);
         // console.log(nfts);
@@ -43,33 +43,7 @@ const Home = () => {
     }
   },[currentAccount]);
   
-  // useEffect(() => {
-  //   checkIfWalletConnected();
-  // }, []);
-
-  // useEffect(() => {
-  //   const wait = async () => {
-  //     await checkIfWalletConnected();
-  //     console.log(currentAccount);
-  //     if (currentAccount) {
-  //       console.log("inside")
-  //       fetchNFTs().then((items) => {
-  //         setNfts(items.reverse());
-  //         setNftsCopy(items);
-  //         console.log(nfts);
-  //       });
-  //   }}
-  //   wait();
-  // },);
-
-  
-
-  
-
-  //CREATOR LIST
-
-  const creators = getTopCreators(nfts);
-  // console.log(creators);
+;
 
   return (
     <div className={Style.homePage}>

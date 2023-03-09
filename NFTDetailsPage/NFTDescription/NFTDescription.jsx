@@ -163,31 +163,32 @@ const NFTDescription = ({ nft }) => {
         </div>
         {/* //Part TWO */}
         <div className={Style.NFTDescription_box_profile}>
-          <h1>
+          <h1 className="mb-5 mt-5">
             {nft.name} #{nft.tokenId}
           </h1>
           <div className={Style.NFTDescription_box_profile_box}>
             <div className={Style.NFTDescription_box_profile_box_left}>
               <Image
-                src={images.user1}
+                src={images.user2}
                 alt="profile"
                 width={40}
                 height={40}
                 className={Style.NFTDescription_box_profile_box_left_img}
               />
               <div className={Style.NFTDescription_box_profile_box_left_info}>
-                <small>Owner</small> <br />
+                
                 <Link href={{ pathname: "/author", query: `${nft.seller}` }}>
-                  <span>
+                <small>{nft.seller.slice(0,6)+".."}</small> <br />
+                  {/* <span>
                     MBD
-                  </span>
+                  </span> */}
                 </Link>
               </div>
             </div>
 
             <div className={Style.NFTDescription_box_profile_box_right}>
               <Image
-                src={images.creatorbackground1}
+                src={images.user4}
                 alt="profile"
                 width={40}
                 height={40}
@@ -251,7 +252,7 @@ const NFTDescription = ({ nft }) => {
               >
                 <small>Current Bid</small>
                 <p>
-                  {nft.price} BSC
+                  {nft.price}
                 </p>
               </div>
             </div>
