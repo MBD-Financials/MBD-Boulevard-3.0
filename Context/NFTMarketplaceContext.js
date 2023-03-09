@@ -189,7 +189,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 
 	//--FETCHNFTS FUNCTION
 
-	const fetchNFTs = async () => {
+	const fetchNFTsCollection = async () => {
 		try {
 			if (currentAccount) {
 				const contract = await connectingWithSmartContract(
@@ -250,7 +250,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 
 	useEffect(() => {
 		if (currentAccount) {
-			fetchNFTs();
+			fetchNFTsCollection();
 		}
 	}, []);
 
@@ -483,7 +483,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 				connectWallet,
 				uploadToIPFS,
 				createNFT,
-				fetchNFTs,
+				fetchNFTsCollection,
 				fetchMyNFTsOrListedNFTs,
 				buyNFT,
 				createSale,
