@@ -29,13 +29,31 @@ const client = ipfsHttpClient({
 
 //---FETCHING SMART CONTRACT
 const fetchContract = async (signerOrProvider, typeOfContract) => {
-	console.log(marketPlaceContractAddress);
 	if (typeOfContract === "marketplace") {
 		const sdk = ThirdwebSDK.fromSigner(signerOrProvider, RPCUri);
 		return await sdk.getContract(marketPlaceContractAddress, "marketplace");
+	} else if (typeOfContract === "mint") {
+		
+		const sdk = ThirdwebSDK.fromPrivateKey(
+			// Your wallet private key (read it in from .env.local file)
+			process.env.NEXT_PUBLIC_PRIVATE_KEY,
+			RPCUri
+		);
+		const signer = await sdk.getContract(
+			// Replace this with your NFT Collection contract address
+			"0xb20B88B9B57E000D45ac9B0F03Ddf159334cFD89",
+			"nft-collection"
+		);
+		
+		const thirdwebSDK = ThirdwebSDK.fromSigner(signerOrProvider, RPCUri);
+		const userContract = await thirdwebSDK.getContract(
+			"0xb20B88B9B57E000D45ac9B0F03Ddf159334cFD89",
+			"nft-collection"
+		);
+		return [signer, userContract];
 	} else {
 		const sdk = ThirdwebSDK.fromSigner(signerOrProvider, RPCUri);
-		return await sdk.getContract(typeOfContract, "nft-collection");
+		return await sdk.getContract(typeOfContract);
 	}
 };
 
@@ -140,26 +158,31 @@ export const NFTMarketplaceProvider = ({ children }) => {
 	const createNFT = async (name, price, image, description, router) => {
 		if (!name || !description || !price || !image)
 			return setError("Data Is Missing"), setOpenError(true);
-		
+
 		try {
-			const contract = await connectingWithSmartContract(
-				"0xb20B88B9B57E000D45ac9B0F03Ddf159334cFD89"
-			);
-			
-			const data = JSON.stringify({ name, description, image });
-			const tx = await contract.erc721.mintTo(currentAccount, data);
-			const receipt = tx.receipt; // the transaction receipt
-			console.log(receipt);
-			const tokenId = tx.id; // the id of the NFT minted
-			console.log(tokenId);
+			const contracts = await connectingWithSmartContract("mint");
+			const signer = contracts[0];
+			const contract = contracts[1];
+			const data = {
+				to: currentAccount,
+				metadata: {
+					name,
+					description,
+					image,
+				},
+			};
+			const signedPayload = await signer.erc721.signature.generate(data);
+			// const isValid = await contract.erc721.signature.verify(signedPayload);
+			// console.log(isValid);
+			const tx = await contract.erc721.signature.mint(signedPayload);
+			alert("Minted Succesfully!!");
 			const nft = await tx.data(); // (optional) fetch details of minted NFT
-			
-			console.log(nft)
+
+			console.log(nft);
 
 			createNFTDB(name, parseFloat(price), description, image, currentAccount);
 			router.push("/searchPage");
 			console.log("NFT CREATED");
-
 		} catch (error) {
 			setError("Error while minting NFT");
 
@@ -257,7 +280,6 @@ export const NFTMarketplaceProvider = ({ children }) => {
 			if (currentAccount) {
 				const contract = await connectingWithSmartContract("marketplace");
 				const listings = await contract.getAllListings();
-				console.log(listings);
 				const items = await Promise.all(
 					listings.map(
 						async ({
@@ -265,7 +287,6 @@ export const NFTMarketplaceProvider = ({ children }) => {
 							assetContractAddress,
 							buyoutCurrencyValuePerToken,
 							sellerAddress,
-
 						}) => {
 							const name = asset.name;
 							const description = asset.description;
@@ -275,7 +296,10 @@ export const NFTMarketplaceProvider = ({ children }) => {
 							const seller = sellerAddress;
 							const owner = sellerAddress;
 							const contractAddress = assetContractAddress;
-							const price = buyoutCurrencyValuePerToken['displayValue'].concat(" ",buyoutCurrencyValuePerToken['symbol']);
+							const price = buyoutCurrencyValuePerToken["displayValue"].concat(
+								" ",
+								buyoutCurrencyValuePerToken["symbol"]
+							);
 							return {
 								price,
 								tokenId: tokenId,
@@ -285,7 +309,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 								name,
 								description,
 								tokenURI,
-								contractAddress
+								contractAddress,
 							};
 						}
 					)
@@ -375,7 +399,6 @@ export const NFTMarketplaceProvider = ({ children }) => {
 			// setOpenError(true);
 		}
 	};
-
 
 	const createUser = async () => {
 		try {
@@ -477,7 +500,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 				transactions,
 				user,
 				updateUser,
-				fetchNFTsMarketplace
+				fetchNFTsMarketplace,
 			}}
 		>
 			{children}

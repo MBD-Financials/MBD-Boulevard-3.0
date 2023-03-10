@@ -19,8 +19,6 @@ const NFTCard = ({ NFTData }) => {
       setLike(false);
     }
   };
-
-  // console.log(NFTData);
   return (
     <div className={Style.NFTCard}>
       {NFTData.map((el, i) => (
