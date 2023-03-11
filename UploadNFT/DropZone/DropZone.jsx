@@ -13,8 +13,6 @@ const DropZone = ({
   name,
   website,
   description,
-  royalties,
-  fileSize,
   category,
   properties,
   uploadToIPFS,
@@ -70,11 +68,6 @@ const DropZone = ({
                 <p>
                   <samp>Website: </samp>
                   {website || ""}
-                </p>
-                
-                <p>
-                  <samp>Royalties: </samp>
-                  {royalties || ""}
                 </p>
                 <p>
                   <samp>Properties: </samp>

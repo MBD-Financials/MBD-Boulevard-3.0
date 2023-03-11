@@ -89,12 +89,12 @@ const AuthorTaps = ({
             >
               Own NFT
             </button>
-            <button
+            {/* <button
               className={`${activeBtn == 3 ? Style.active : ""}`}
               onClick={(e) => openTab(e)}
             >
               Liked
-            </button>
+            </button> */}
             {/* <button
               className={`${activeBtn == 4 ? Style.active : ""}`}
               onClick={(e) => openTab(e)}

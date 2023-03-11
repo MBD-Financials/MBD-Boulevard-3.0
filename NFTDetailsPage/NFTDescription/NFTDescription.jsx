@@ -35,7 +35,6 @@ const NFTDescription = ({ nft }) => {
   const [history, setHistory] = useState(true);
   const [provanance, setProvanance] = useState(false);
   const [owner, setOwner] = useState(false);
-  const [popup, setPopup] = useState(false);
 
 
   const router = useRouter();
@@ -244,7 +243,17 @@ const NFTDescription = ({ nft }) => {
             </div> */}
             {nft.price != ""? (
               <div className={Style.NFTDescription_box_profile_biding_box_price}>
-            {currentAccount == nft.seller.toLowerCase() ? (<div></div>):(
+                {currentAccount == nft.seller.toLowerCase() ? (
+                  <div
+                    className={
+                      Style.NFTDescription_box_profile_biding_box_price_bid
+                    }
+                  >
+                    <small>Current Bid</small>
+                  <p>
+                    {nft.price}
+                  </p>
+              </div>):(
               <div
                 className={
                   Style.NFTDescription_box_profile_biding_box_price_bid
@@ -265,6 +274,23 @@ const NFTDescription = ({ nft }) => {
             <div className={Style.NFTDescription_box_profile_biding_box_button}>
             {currentAccount == nft.seller.toLowerCase() ? (
               <div>
+                {nft.price != "" ? (
+                
+                  <Button
+                    icon=<FaWallet />
+                    btnName="Delist your NFT"
+                    handleClick={() =>
+                      router.push(
+                        `/delisting?listingId=${nft.listingId}&image=${nft.image}`
+                      )
+                    }
+                    classStyle={Style.button}
+                  />
+              
+
+
+              ):(
+                <div>
                 <Button
                   icon=<FaWallet />
                   btnName="List on Marketplace"
@@ -275,6 +301,8 @@ const NFTDescription = ({ nft }) => {
                   }
                   classStyle={Style.button}
                 />
+              </div>
+              )}
               </div>
               ) : (
                 nft.price !="" ?(
@@ -288,7 +316,10 @@ const NFTDescription = ({ nft }) => {
                 <Button
                 icon=<FaPercentage />
                 btnName="Make offer"
-                handleClick={() => {}}
+                handleClick={() => router.push(
+                      `/createoffer?listingId=${nft.listingId}&image=${nft.image}`
+                    )
+                    }
                 classStyle={Style.button}
                 
               />
@@ -304,9 +335,9 @@ const NFTDescription = ({ nft }) => {
             </div>
 
             <div className={Style.NFTDescription_box_profile_biding_box_tabs}>
-              <button onClick={(e) => openTabs(e)}>Bid History</button>
-              <button onClick={(e) => openTabs(e)}>Provanance</button>
-              <button onClick={() => openOwmer()}>Owner</button>
+              <button onClick={(e) => openTabs(e)}>Offers</button>
+              {/* <button onClick={(e) => openTabs(e)}>Provanance</button>
+              <button onClick={() => openOwmer()}>Owner</button> */}
             </div>
 
             {history && (
@@ -314,7 +345,7 @@ const NFTDescription = ({ nft }) => {
                 <NFTTabs dataTab={historyArray} />
               </div>
             )}
-            {provanance && (
+            {/* {provanance && (
               <div className={Style.NFTDescription_box_profile_biding_box_card}>
                 <NFTTabs dataTab={provananceArray} />
               </div>
@@ -324,7 +355,7 @@ const NFTDescription = ({ nft }) => {
               <div className={Style.NFTDescription_box_profile_biding_box_card}>
                 <NFTTabs dataTab={ownerArray} icon=<MdVerified /> />
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>

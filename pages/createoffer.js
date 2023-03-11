@@ -16,21 +16,21 @@ const reSellToken = () => {
   // const [image, setImage] = useState("");
   const [price, setPrice] = useState('"');
   const router = useRouter();
-  const { id, assetContractAddress,image } = router.query;
-  const { listNFT } = useContext(NFTMarketplaceContext);
+  const { listingId,image } = router.query;
+  const { makeOffer } = useContext(NFTMarketplaceContext);
 
 
   return (
     <div className={Style.reSellToken}>
       <div className={Style.reSellToken_box}>
-        <h1>List your NFT</h1>
+        <h1>Create Offer</h1>
         <div className={Style.reSellToken_box_image}>
           {image && (
             <Image src={image} alt="list nft" width={400} height={400} />
           )}
         </div>
         <div className={formStyle.Form_box_input}>
-          <label htmlFor="name">Price</label>
+          <label htmlFor="name">Offer Price</label>
           <input
             type="number"
             min={1}
@@ -40,10 +40,8 @@ const reSellToken = () => {
           />
         </div>
 
-        
-
         <div className="mt-5">
-          <Button btnName="List" handleClick={() => listNFT(id, assetContractAddress,price)} />
+          <Button btnName="Offer" handleClick={() => makeOffer(listingId,price)} />
         </div>
       </div>
     </div>

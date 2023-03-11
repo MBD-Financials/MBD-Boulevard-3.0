@@ -4,7 +4,6 @@ import { ethers } from "ethers";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { create as ipfsHttpClient } from "ipfs-http-client";
-
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
@@ -155,8 +154,8 @@ export const NFTMarketplaceProvider = ({ children }) => {
 	};
 
 	//---CREATENFT FUNCTION
-	const createNFT = async (name, price, image, description, router) => {
-		if (!name || !description || !price || !image)
+	const createNFT = async (name, image, description, router) => {
+		if (!name || !description || !image)
 			return setError("Data Is Missing"), setOpenError(true);
 
 		try {
@@ -181,7 +180,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 			console.log(nft);
 
 			createNFTDB(name, parseFloat(price), description, image, currentAccount);
-			router.push("/searchPage");
+			router.push("/profile");
 			console.log("NFT CREATED");
 		} catch (error) {
 			setError("Error while minting NFT");
@@ -190,32 +189,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 		}
 	};
 
-	//--- createSale FUNCTION
-	const createSale = async (url, formInputPrice, isReselling, id) => {
-		try {
-			console.log(url, formInputPrice, isReselling, id);
-			const price = ethers.utils.parseUnits(formInputPrice, "ether");
 
-			const contract = await connectingWithSmartContract();
-
-			const listingPrice = await contract.getListingPrice();
-
-			const transaction = !isReselling
-				? await contract.createToken(url, price, {
-						value: listingPrice.toString(),
-				  })
-				: await contract.resellToken(id, price, {
-						value: listingPrice.toString(),
-				  });
-
-			await transaction.wait();
-			console.log(transaction);
-		} catch (error) {
-			setError("error while creating sale");
-			// setOpenError(true);
-			console.log(error);
-		}
-	};
 
 	//--FETCHNFTS FUNCTION
 
@@ -269,7 +243,13 @@ export const NFTMarketplaceProvider = ({ children }) => {
 						};
 					})
 				);
-				return items;
+				const listedNFTs = items.filter(
+					(el)=>{
+						return el.seller.toLowerCase() != "0x0000000000000000000000000000000000000000";
+					}
+				)
+				return listedNFTs;
+				
 			}
 		} catch (error) {
 			setError("Error while fetching NFTS");
@@ -321,7 +301,8 @@ export const NFTMarketplaceProvider = ({ children }) => {
 						}
 					)
 				);
-				console.log(items);
+				
+				
 				return items;
 			}
 		} catch (error) {
@@ -335,49 +316,32 @@ export const NFTMarketplaceProvider = ({ children }) => {
 		}
 	}, []);
 
+	
 	//--FETCHING MY NFT OR LISTED NFTs
 	const fetchMyNFTsOrListedNFTs = async (type) => {
 		try {
 			if (currentAccount) {
-				const contract = await connectingWithSmartContract(
-					"0xb20B88B9B57E000D45ac9B0F03Ddf159334cFD89"
-				);
-
-				const data =
-					type == "fetchItemsListed"
-						? await contract.fetchItemsListed()
-						: await contract.fetchMyNFTs();
-
-				const items = await Promise.all(
-					data.map(
-						async ({ tokenId, seller, owner, price: unformattedPrice }) => {
-							const tokenURI = await contract.tokenURI(tokenId);
-
-							var tokenSplit = tokenURI.split("/").pop();
-							const tokenURISend = `https://ipfs.io/ipfs/${tokenSplit}`;
-							const {
-								data: { image, name, description },
-							} = await axios.get(tokenURISend);
-
-							const price = ethers.utils.formatUnits(
-								unformattedPrice.toString(),
-								"ether"
-							);
-
-							return {
-								price,
-								tokenId: tokenId.toNumber(),
-								seller,
-								owner,
-								image,
-								name,
-								description,
-								tokenURI,
-							};
+				if (type === 'fetchItemsListed'){
+					const data = await fetchNFTsMarketplace()
+					// console.log(data);
+					const listedNFTs = data.filter(
+						(el)=>{
+							return el.seller.toLowerCase() == currentAccount;
 						}
 					)
-				);
-				return items;
+					return listedNFTs;
+				}
+				else{
+					const data = await fetchNFTsCollection();
+					const listedNFTs = data.filter(
+						(el)=>{
+							console.log(el.seller,currentAccount)
+							return el.seller.toLowerCase() == currentAccount;
+						}
+					)
+					return listedNFTs;
+				}
+				
 			}
 		} catch (error) {
 			setError("Error while fetching listed NFTs");
@@ -397,7 +361,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 			console.log(tokenId);
 			const txResult = await contract.buyoutListing(tokenId, 1);
 			
-			router.push("/searchPage");
+			router.push("/profile");
 		} catch (error) {
 			setError("Error While buying NFT");
 			alert("Error while buying NFT\ncheck balance")
@@ -416,13 +380,43 @@ export const NFTMarketplaceProvider = ({ children }) => {
 				quantity: 1, // how many of the asset you want to list
 				currencyContractAddress: "0x242a1ff6ee06f2131b7924cacb74c7f9e3a5edc9", // address of the currency contract that will be used to pay for the listing
 				buyoutPricePerToken: price, // how much the asset will be sold for
-			  });
-
+			  });	
+			router.push("/profile")
 		}catch(error){
 			alert("Error: " + error)
 		}
 
 	}
+	const delistNFT = async(listingId) =>{
+		try{
+			console.log(listingId);
+			const contract = await connectingWithSmartContract("marketplace");
+			const txResult = await contract.direct.cancelListing(listingId);
+			router.push("/profile");
+		}catch(error){
+			alert("Error: " + error)
+		}
+
+	}
+	const makeOffer = async(listingId,offer) =>{
+		try{
+			const contract = await connectingWithSmartContract("marketplace");
+			const txResult = await contract.direct.makeOffer(
+				listingId,
+				1,
+				"0x242a1ff6ee06f2131b7924cacb74c7f9e3a5edc9",
+				offer,
+				new Date(Date.now() + 60 * 60 * 24 * 1000), // e.g offer expires 1 day from now
+			);
+			alert("Offer Created\nRefresh your page if you don't see your offer")
+		}catch(error){
+			alert("Something went wrong")
+			console.log("Error while creating offer")
+			console.log(error)
+		}
+		
+	}
+
 
 	const createUser = async () => {
 		try {
@@ -512,7 +506,6 @@ export const NFTMarketplaceProvider = ({ children }) => {
 				fetchNFTsCollection,
 				fetchMyNFTsOrListedNFTs,
 				buyNFT,
-				createSale,
 				currentAccount,
 				titleData,
 				setOpenError,
@@ -525,7 +518,9 @@ export const NFTMarketplaceProvider = ({ children }) => {
 				user,
 				updateUser,
 				fetchNFTsMarketplace,
-				listNFT
+				listNFT,
+				delistNFT,
+				makeOffer
 			}}
 		>
 			{children}
