@@ -179,6 +179,16 @@
     align-items: center;
     gap: 3rem;
 }
+.BuyAndOfferBox{
+    margin-top: 3rem;
+    display: flex;
+    gap: 1rem;
+    
+}
+.BuyAndOfferBox button{
+    font-size: 1.2rem;
+    
+}
 
 .NFTDescription_box_profile_biding_box_tabs{
     margin-top: 3rem;

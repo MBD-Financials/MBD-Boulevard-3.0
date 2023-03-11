@@ -226,16 +226,18 @@ export const NFTMarketplaceProvider = ({ children }) => {
 					"0xb20B88B9B57E000D45ac9B0F03Ddf159334cFD89"
 				);
 				const data = await contract.erc721.getAll();
+				console.log(data);
 				const items = await Promise.all(
-					data.map(async ({ metadata, nft_owner }) => {
+					data.map(async ({ metadata, owner }) => {
 						const name = metadata.name;
 						const description = metadata.description;
 						const tokenId = metadata.id;
 						const image = metadata.image;
 						const tokenURI = metadata.uri;
-						const seller = nft_owner;
-						const owner = nft_owner;
-						const price = "1 BNB";
+						const seller = owner;
+						const _owner = owner;
+						const price = "";
+						const contractAddress = "0xb20B88B9B57E000D45ac9B0F03Ddf159334cFD89"
 						// const tokenURI = await contract.tokenURI(tokenId);
 
 						// --- THIS IS WORKING ---
@@ -256,13 +258,14 @@ export const NFTMarketplaceProvider = ({ children }) => {
 
 						return {
 							price,
-							tokenId: tokenId,
+							tokenId,
 							seller,
-							owner,
+							_owner,
 							image,
 							name,
 							description,
 							tokenURI,
+							contractAddress
 						};
 					})
 				);
@@ -279,7 +282,8 @@ export const NFTMarketplaceProvider = ({ children }) => {
 		try {
 			if (currentAccount) {
 				const contract = await connectingWithSmartContract("marketplace");
-				const listings = await contract.getAllListings();
+				const listings = await contract.getActiveListings();
+				
 				const items = await Promise.all(
 					listings.map(
 						async ({
@@ -287,6 +291,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 							assetContractAddress,
 							buyoutCurrencyValuePerToken,
 							sellerAddress,
+							id
 						}) => {
 							const name = asset.name;
 							const description = asset.description;
@@ -300,6 +305,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 								" ",
 								buyoutCurrencyValuePerToken["symbol"]
 							);
+							const listingId = id;
 							return {
 								price,
 								tokenId: tokenId,
@@ -310,6 +316,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 								description,
 								tokenURI,
 								contractAddress,
+								listingId
 							};
 						}
 					)
@@ -385,20 +392,37 @@ export const NFTMarketplaceProvider = ({ children }) => {
 	//---BUY NFTs FUNCTION
 	const buyNFT = async (nft) => {
 		try {
-			const contract = await connectingWithSmartContract();
-			const price = ethers.utils.parseUnits(nft.price.toString(), "ether");
-
-			const transaction = await contract.createMarketSale(nft.tokenId, {
-				value: price,
-			});
-
-			await transaction.wait();
-			router.push("/author");
+			const contract = await connectingWithSmartContract("marketplace");
+			const tokenId = nft.listingId;
+			console.log(tokenId);
+			const txResult = await contract.buyoutListing(tokenId, 1);
+			
+			router.push("/searchPage");
 		} catch (error) {
 			setError("Error While buying NFT");
-			// setOpenError(true);
+			alert("Error while buying NFT\ncheck balance")
 		}
 	};
+
+	const listNFT = async(tokenId, assetContractAddress,price) =>{
+		try{
+			console.log(price);
+			const contract = await connectingWithSmartContract("marketplace");
+			const tx = await contract.direct.createListing({
+				assetContractAddress: assetContractAddress, // address of the contract the asset you want to list is on
+				tokenId: tokenId, // token ID of the asset you want to list
+				startTimestamp: new Date(), // when should the listing open up for offers
+				listingDurationInSeconds: 2592000, // how long the listing will be open for
+				quantity: 1, // how many of the asset you want to list
+				currencyContractAddress: "0x242a1ff6ee06f2131b7924cacb74c7f9e3a5edc9", // address of the currency contract that will be used to pay for the listing
+				buyoutPricePerToken: price, // how much the asset will be sold for
+			  });
+
+		}catch(error){
+			alert("Error: " + error)
+		}
+
+	}
 
 	const createUser = async () => {
 		try {
@@ -501,6 +525,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 				user,
 				updateUser,
 				fetchNFTsMarketplace,
+				listNFT
 			}}
 		>
 			{children}

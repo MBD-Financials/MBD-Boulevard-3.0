@@ -35,6 +35,8 @@ const NFTDescription = ({ nft }) => {
   const [history, setHistory] = useState(true);
   const [provanance, setProvanance] = useState(false);
   const [owner, setOwner] = useState(false);
+  const [popup, setPopup] = useState(false);
+
 
   const router = useRouter();
 
@@ -179,29 +181,26 @@ const NFTDescription = ({ nft }) => {
                 
                 <Link href={{ pathname: "/author", query: `${nft.seller}` }}>
                 <small>{nft.seller.slice(0,6)+".."}</small> <br />
-                  {/* <span>
-                    MBD
-                  </span> */}
                 </Link>
               </div>
             </div>
 
-            <div className={Style.NFTDescription_box_profile_box_right}>
-              <Image
-                src={images.user4}
-                alt="profile"
-                width={40}
-                height={40}
-                className={Style.NFTDescription_box_profile_box_left_img}
-              />
+              {/* <div className={Style.NFTDescription_box_profile_box_right}>
+                <Image
+                  src={images.user4}
+                  alt="profile"
+                  width={40}
+                  height={40}
+                  className={Style.NFTDescription_box_profile_box_left_img}
+                />
 
-              <div className={Style.NFTDescription_box_profile_box_right_info}>
-                <small>Collection</small> <br />
-                <span>
-                  Mokeny app
-                </span>
-              </div>
-            </div>
+                <div className={Style.NFTDescription_box_profile_box_right_info}>
+                  <small>Collection</small> <br />
+                  <span>
+                    Mokeny app
+                  </span>
+                </div>
+              </div> */}
           </div>
 
           <div className={Style.NFTDescription_box_profile_biding}>
@@ -243,8 +242,9 @@ const NFTDescription = ({ nft }) => {
                 <span>secs</span>
               </div>
             </div> */}
-
-            <div className={Style.NFTDescription_box_profile_biding_box_price}>
+            {nft.price != ""? (
+              <div className={Style.NFTDescription_box_profile_biding_box_price}>
+            {currentAccount == nft.seller.toLowerCase() ? (<div></div>):(
               <div
                 className={
                   Style.NFTDescription_box_profile_biding_box_price_bid
@@ -255,37 +255,52 @@ const NFTDescription = ({ nft }) => {
                   {nft.price}
                 </p>
               </div>
+              )}
             </div>
+            ):(
+              <div><small>NOT AVAILABLE FOR PURCHASE</small></div>
+            )}
+            
 
             <div className={Style.NFTDescription_box_profile_biding_box_button}>
             {currentAccount == nft.seller.toLowerCase() ? (
-                <p>You can't buy your own NFT</p>
-              ) : currentAccount == nft.owner.toLowerCase() ? (
+              <div>
                 <Button
                   icon=<FaWallet />
                   btnName="List on Marketplace"
                   handleClick={() =>
                     router.push(
-                      `/reSellToken?id=${nft.tokenId}&tokenURI=${nft.tokenURI}&price=${nft.price}`
+                      `/listing?id=${nft.tokenId}&assetContractAddress=${nft.contractAddress}&image=${nft.image}`
                     )
                   }
                   classStyle={Style.button}
                 />
+              </div>
               ) : (
+                nft.price !="" ?(
+                  <div className={Style.BuyAndOfferBox}>
                 <Button
                   icon=<FaWallet />
                   btnName="Buy NFT"
                   handleClick={() => buyNFT(nft)}
                   classStyle={Style.button}
                 />
-              )}
-
-              <Button
+                <Button
                 icon=<FaPercentage />
                 btnName="Make offer"
                 handleClick={() => {}}
                 classStyle={Style.button}
+                
               />
+              </div>
+                ):(
+                  <div></div>
+                )
+                
+              )}
+              
+
+              
             </div>
 
             <div className={Style.NFTDescription_box_profile_biding_box_tabs}>

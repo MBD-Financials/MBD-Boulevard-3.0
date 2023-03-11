@@ -67,21 +67,30 @@ const NFTCard = ({ NFTData }) => {
                   <h4 className="mt-5 mb-1">
                     {el.name} #{el.tokenId}
                   </h4>
-
+                  {
+                      el.price!=="" ? (
                   <div
                     className={Style.NFTCard_box_update_details_price_box_box}
                   >
-                    <div
+                    
+                        <div
                       className={Style.NFTCard_box_update_details_price_box_bid}
                     >
                       <p className="text-sm font-medium">Price</p>
                       <p className="text-lg">{el.price}</p>
                     </div>
+                      
+                    
                     {/* <div>
                       <p className="text-xs">61 in stock</p>
                     </div> */}
                   </div>
+                  ):(
+                        <div></div>
+                      )
+                    }
                 </div>
+                
               </div>
               {/* <div className={Style.NFTCard_box_update_details_category}>
                 <BsImages />
