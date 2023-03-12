@@ -19,7 +19,7 @@ import {
   TiSocialInstagram,
 } from "react-icons/ti";
 import { BiTransferAlt, BiDollar } from "react-icons/bi";
-
+import toast, {Toaster} from 'react-hot-toast';
 //INTERNAL IMPORT
 import Style from "./NFTDescription.module.css";
 import images from "../../img";
@@ -109,6 +109,10 @@ const NFTDescription = ({ nft }) => {
 
   return (
     <div className={Style.NFTDescription}>
+        <Toaster
+          position="top-right"
+          reverseOrder={false}
+        />
       <div className={Style.NFTDescription_box}>
         {/* //Part ONE */}
         <div className={Style.NFTDescription_box_share}>
@@ -310,7 +314,7 @@ const NFTDescription = ({ nft }) => {
                 <Button
                   icon=<FaWallet />
                   btnName="Buy NFT"
-                  handleClick={() => buyNFT(nft)}
+                  handleClick={() => buyNFT(nft,toast)}
                   classStyle={Style.button}
                 />
                 <Button

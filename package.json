@@ -29,6 +29,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-dropzone": "^14.2.2",
+    "react-hot-toast": "^2.4.0",
     "react-icons": "^4.4.0",
     "react-social-icons": "^5.15.0",
     "web3modal": "^1.9.9"

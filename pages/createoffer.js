@@ -17,7 +17,7 @@ const reSellToken = () => {
   const [price, setPrice] = useState('"');
   const router = useRouter();
   const { listingId,image } = router.query;
-  const { makeOffer } = useContext(NFTMarketplaceContext);
+  const { createOffer } = useContext(NFTMarketplaceContext);
 
 
   return (
@@ -34,14 +34,14 @@ const reSellToken = () => {
           <input
             type="number"
             min={1}
-            placeholder="0.1"
+            placeholder=""
             className={formStyle.Form_box_input_userName}
             onChange={(e) => setPrice(e.target.value)}
           />
         </div>
 
         <div className="mt-5">
-          <Button btnName="Offer" handleClick={() => makeOffer(listingId,price)} />
+          <Button btnName="Offer" handleClick={() => createOffer(listingId,price)} />
         </div>
       </div>
     </div>
