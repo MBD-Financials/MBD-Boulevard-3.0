@@ -7,6 +7,7 @@ import { create as ipfsHttpClient } from "ipfs-http-client";
 import { ThirdwebSDK, NATIVE_TOKENS } from "@thirdweb-dev/sdk";
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 const projectSecretKey = process.env.NEXT_PUBLIC_PROJECT_SECRET_KEY;
+import { NATIVE_TOKEN_ADDRESS } from "@thirdweb-dev/sdk";
 const auth = `Basic ${Buffer.from(`${projectId}:${projectSecretKey}`).toString(
 	"base64"
 )}`;
@@ -381,13 +382,14 @@ export const NFTMarketplaceProvider = ({ children }) => {
 			
 			const contract = await connectingWithSmartContract("marketplace");
 			const currencyContractAddress = NATIVE_TOKENS[56].wrapped.address;
+			
 			const tx = await contract.direct.createListing({
 				assetContractAddress: assetContractAddress, // address of the contract the asset you want to list is on
 				tokenId: tokenId, // token ID of the asset you want to list
 				startTimestamp: new Date(), // when should the listing open up for offers
 				listingDurationInSeconds: 2592000, // how long the listing will be open for
 				quantity: 1, // how many of the asset you want to list
-				currencyContractAddress: currencyContractAddress, // address of the currency contract that will be used to pay for the listing
+				currencyContractAddress: NATIVE_TOKEN_ADDRESS, // address of the currency contract that will be used to pay for the listing
 				buyoutPricePerToken: price, // how much the asset will be sold for
 			  });	
 			router.push("/profile")
@@ -416,14 +418,14 @@ export const NFTMarketplaceProvider = ({ children }) => {
 			const txResult = await contract.direct.makeOffer(
 				listingId,
 				1,
-				currencyContractAddress,
+				NATIVE_TOKEN_ADDRESS,
 				offer,
 				new Date(Date.now() + 60 * 60 * 24 * 1000), // e.g offer expires 1 day from now
 			);
 			alert("Offer Created\nRefresh your page if you don't see your offer")
 		}catch(error){
 			alert("Something went wrong")
-			console.log("Error while creating offer")
+			
 		}
 		
 	}
