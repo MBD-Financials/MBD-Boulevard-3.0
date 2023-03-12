@@ -418,12 +418,13 @@ export const NFTMarketplaceProvider = ({ children }) => {
 			const txResult = await contract.direct.makeOffer(
 				listingId,
 				1,
-				NATIVE_TOKEN_ADDRESS,
+				currencyContractAddress,
 				offer,
 				new Date(Date.now() + 60 * 60 * 24 * 1000), // e.g offer expires 1 day from now
 			);
 			alert("Offer Created\nRefresh your page if you don't see your offer")
 		}catch(error){
+			console.log(error)
 			alert("Something went wrong")
 			
 		}
