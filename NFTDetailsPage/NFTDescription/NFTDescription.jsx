@@ -35,7 +35,8 @@ const NFTDescription = ({ nft }) => {
   const [history, setHistory] = useState(true);
   const [provanance, setProvanance] = useState(false);
   const [owner, setOwner] = useState(false);
-
+  const [offers, setOffers] = useState([]);
+  const { buyNFT, currentAccount} = useContext(NFTMarketplaceContext);
 
   const router = useRouter();
 
@@ -104,8 +105,8 @@ const NFTDescription = ({ nft }) => {
     }
   };
 
-  //SMART CONTRACT DATA
-  const { buyNFT, currentAccount } = useContext(NFTMarketplaceContext);
+
+
 
   return (
     <div className={Style.NFTDescription}>

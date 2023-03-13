@@ -63,6 +63,7 @@ const connectingWithSmartContract = async (typeOfContract) => {
 		const web3Modal = new Web3Modal();
 		const connection = await web3Modal.connect();
 		const provider = new ethers.providers.Web3Provider(connection);
+		// const provider = new ethers.providers.JsonRpcProvider(RPCUri);
 		const signer = provider.getSigner();
 		const contract = await fetchContract(signer, typeOfContract);
 		return contract;
@@ -186,6 +187,17 @@ export const NFTMarketplaceProvider = ({ children }) => {
 		}
 	};
 
+	const fetchOffers = async ()=>{
+		try{
+			console.log("Fetching offers.");
+			const contract = await connectingWithSmartContract("marketplace");
+			const offers = await contract.getOffers("1")
+			console.log(offers)
+		//   return offers;
+		}catch(error){
+		  	console.log(error)
+		}
+	  }
 
 
 	//--FETCHNFTS FUNCTION
@@ -259,7 +271,6 @@ export const NFTMarketplaceProvider = ({ children }) => {
 			if (currentAccount) {
 				const contract = await connectingWithSmartContract("marketplace");
 				const listings = await contract.getActiveListings();
-				
 				const items = await Promise.all(
 					listings.map(
 						async ({
@@ -309,6 +320,7 @@ export const NFTMarketplaceProvider = ({ children }) => {
 		if (currentAccount) {
 			fetchNFTsCollection();
 			fetchNFTsMarketplace();
+			// fetchOffers();
 		}
 	}, []);
 

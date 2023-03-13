@@ -30,7 +30,7 @@ const reSellToken = () => {
           )}
         </div>
         <div className={formStyle.Form_box_input}>
-          <label htmlFor="name">Offer Price</label>
+          <label htmlFor="name">Offer Price (WBNB) </label>
           <input
             type="number"
             min={1}
