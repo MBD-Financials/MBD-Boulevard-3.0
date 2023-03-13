@@ -318,7 +318,7 @@ const NFTDescription = ({ nft }) => {
                   handleClick={() => buyNFT(nft,toast)}
                   classStyle={Style.button}
                 />
-                <Button
+                {/* <Button
                 icon=<FaPercentage />
                 btnName="Make offer"
                 handleClick={() => router.push(
@@ -327,7 +327,7 @@ const NFTDescription = ({ nft }) => {
                     }
                 classStyle={Style.button}
                 
-              />
+              /> */}
               </div>
                 ):(
                   <div></div>
@@ -339,17 +339,19 @@ const NFTDescription = ({ nft }) => {
               
             </div>
 
-            <div className={Style.NFTDescription_box_profile_biding_box_tabs}>
-              <button onClick={(e) => openTabs(e)}>Offers</button>
+            {/* section for showing the offer */}
+            {/* <div className={Style.NFTDescription_box_profile_biding_box_tabs}> */}
+              {/* <button onClick={(e) => openTabs(e)}>Offers</button> */}
               {/* <button onClick={(e) => openTabs(e)}>Provanance</button>
               <button onClick={() => openOwmer()}>Owner</button> */}
-            </div>
+            {/* </div> */}
 
-            {history && (
-              <div className={Style.NFTDescription_box_profile_biding_box_card}>
-                <NFTTabs dataTab={historyArray} />
-              </div>
-            )}
+              {/* This show the offer area */}
+            {/* {history && ( */}
+              {/* <div className={Style.NFTDescription_box_profile_biding_box_card}> */}
+                {/* <NFTTabs dataTab={historyArray} /> */}
+              {/* </div> */}
+            {/* )} */}
             {/* {provanance && (
               <div className={Style.NFTDescription_box_profile_biding_box_card}>
                 <NFTTabs dataTab={provananceArray} />
