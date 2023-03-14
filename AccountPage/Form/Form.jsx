@@ -92,7 +92,7 @@ const Form = ({user,updateUser,fileUrl}) => {
 
 							<input 
 								type="text" 
-								placeholder="website" 
+								placeholder="" 
 								value={website}
 								onChange={(e) => setWebsite(e.target.value)}
              				 />
@@ -108,7 +108,7 @@ const Form = ({user,updateUser,fileUrl}) => {
 								</div>
 								<input
 									type="text"
-									placeholder="https://www.facebook.com/MBDFinancials"
+									placeholder=""
 								/>
 							</div>
 						</div>
@@ -120,7 +120,7 @@ const Form = ({user,updateUser,fileUrl}) => {
 								</div>
 								<input
 									type="text"
-									placeholder="https://twitter.com/MBDFinancials"
+									placeholder=""
 								/>
 							</div>
 						</div>
@@ -132,7 +132,7 @@ const Form = ({user,updateUser,fileUrl}) => {
 								</div>
 								<input
 									type="text"
-									placeholder="https://www.instagram.com/mbdfinancials/"
+									placeholder=""
 								/>
 							</div>
 						</div>
@@ -144,7 +144,7 @@ const Form = ({user,updateUser,fileUrl}) => {
 								</div>
 								<input
 									type="text"
-									placeholder="https://www.discord.com/mbdfinancials/"
+									placeholder=""
 								/>
 							</div>
 						</div>
@@ -156,7 +156,7 @@ const Form = ({user,updateUser,fileUrl}) => {
 								</div>
 								<input
 									type="text"
-									placeholder="https://www.telegram.com/mbdfinancials/"
+									placeholder=""
 								/>
 							</div>
 						</div>

@@ -73,7 +73,10 @@ const author = () => {
   useEffect(() => {
     if (currentAccount) {
     fetchMyNFTsOrListedNFTs("fetchItemsListed").then((items) => {
-      setNfts(items);
+      if (items !== undefined){
+        setMyNFTs(items);
+      }
+      // setNfts(items);
       
     });
   }
@@ -85,8 +88,12 @@ const author = () => {
   useEffect(() => {
     if (currentAccount) {
     fetchMyNFTsOrListedNFTs("fetchMyNFTs").then((items) => {
-      setMyNFTs(items);
+      if (items !== undefined){
+        setMyNFTs(items);
+      }
+      
     });
+    
   }
   }, [currentAccount]);
 
