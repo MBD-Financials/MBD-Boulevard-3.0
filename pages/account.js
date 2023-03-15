@@ -34,7 +34,7 @@ const account = () => {
           other personal settings.
         </p>
       </div>
-
+      {/* PROFILE CIRCLE */}
       <div className={Style.account_box}>
         <div className={Style.account_box_img} {...getRootProps()}>
           <input {...getInputProps()} />
